@@ -1,0 +1,17 @@
+services:
+  vents-mqtt-ha-bridge:
+    image: ghcr.io/voluzi/vents-ahu
+    container_name: vents-mqtt-ha-bridge
+    restart: unless-stopped
+    env_file:
+      - .env
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    command: --interval 30 --label-enable --cleanup --rolling-restart
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

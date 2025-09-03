@@ -10,7 +10,10 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [{ name = "Helder Moreira", email = "helder.moreira@voluzi.com" }]
-dependencies = []
+dependencies = ["paho-mqtt"]
+
+[project.scripts]
+vents-mqtt-ha-bridge = "vents_mqtt_ha_bridge.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
