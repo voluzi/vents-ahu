@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vents-ahu"
+version = "0.1.0"
+description = "Toolkit for Vents Air Handling Units (AHU)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Helder Moreira", email = "helder.moreira@voluzi.com" }]
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+renac_ble = ["py.typed"]
