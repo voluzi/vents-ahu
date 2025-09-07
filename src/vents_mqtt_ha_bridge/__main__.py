@@ -76,7 +76,7 @@ MODE_MAP = {
     c.MODE_AUTO: "auto",
     c.MODE_COOLING: "cool",
     c.MODE_HEATING: "heat",
-    c.MODE_VENTILATION: "ventilation",
+    c.MODE_VENTILATION: "fan_only",
 }
 MODE_REVERSE = {v: k for k, v in MODE_MAP.items()}
 
@@ -416,7 +416,7 @@ def _publish_discovery(mqtt_client: mqtt.Client) -> None:
 
         "mode_command_topic": f"{STATE_BASE}/mode/set",
         "mode_state_topic": f"{STATE_BASE}/mode",
-        "modes": ["auto", "cool", "heat", "ventilation"],
+        "modes": ["auto", "cool", "heat", "fan_only"],
 
         "temperature_command_topic": f"{STATE_BASE}/target_temp/set",
         "temperature_state_topic": f"{STATE_BASE}/target_temp",

@@ -43,7 +43,7 @@ MODE_HEATING = 1
 MODE_COOLING = 2
 MODE_AUTO = 3
 MODE_MAP = {
-    MODE_VENTILATION: "ventilation",
+    MODE_VENTILATION: "fan_only",
     MODE_HEATING: "heating",
     MODE_COOLING: "cooling",
     MODE_AUTO: "auto",
