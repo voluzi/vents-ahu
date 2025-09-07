@@ -5,3 +5,4 @@ venv
 .envrc
 __pycache__
 build
+vents_ahu.egg-info

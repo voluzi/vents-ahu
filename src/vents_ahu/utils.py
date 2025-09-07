@@ -28,44 +28,41 @@ def validate(inner: bytes):
 
 
 def decode_reply(inner: bytes) -> Dict[int, bytes]:
-    """
-    Parse payload after the response byte (0x06), supporting:
-      - FE/TLV blocks: FE <len> <param_id(1 or 2 LE)> <value:len>
-      - Compact pairs: [low][value]  (1+1)
-    Returns {low_byte: raw_value_bytes}. If the same key appears twice,
-    FE/TLV wins (it’s length-accurate).
-    """
     # skip fixed header → fd fd | proto | size | id(16) | pwd_len | pwd | resp(0x06)
     pos = 2 + 1 + 1 + 16
     pwd_len = inner[pos]
     pos += 1 + pwd_len + 1
-    end = len(inner) - 2
+    end = len(inner) - 2  # strip checksum
 
     out: Dict[int, bytes] = {}
     i = pos
     while i < end:
         b = inner[i]
         if b == 0xFE:
-            # TLV
-            if i + 1 >= end: break
+            if i + 1 >= end:
+                break
             vlen = inner[i + 1]
-            # Determine if param id is 1 byte (e.g. 0x9c) or 2-byte LE (e.g. 0x25 0x00)
-            if i + 3 < end and inner[i + 3] == 0x00:
-                p_low = inner[i + 2]  # low byte from LE
-                id_size = 2
+
+            # Prefer 2-byte LE param if it fits and the “page” byte looks sane (0x00..0x03)
+            use_two = (i + 2 + 2 + vlen) <= end and (inner[i + 3] in (0x00, 0x01, 0x02, 0x03))
+            if use_two:
+                p_low = inner[i + 2]        # LE low byte
+                val_start = i + 4
             else:
-                p_low = inner[i + 2]
-                id_size = 1
-            val_start = i + 2 + id_size
+                p_low = inner[i + 2]        # 1-byte id
+                val_start = i + 3
+
             val_end = val_start + vlen
-            if val_end > end: break
+            if val_end > end:
+                break
             out[p_low] = inner[val_start:val_end]  # FE wins
             i = val_end
         else:
-            # compact pair [low][value]
-            if i + 1 >= end: break
-            k = inner[i];
+            # compact [low][value]
+            if i + 1 >= end:
+                break
+            k = inner[i]
             v = inner[i + 1]
-            out.setdefault(k, bytes([v]))  # don’t override FE value
+            out.setdefault(k, bytes([v]))
             i += 2
     return out
