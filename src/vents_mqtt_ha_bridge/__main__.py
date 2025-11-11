@@ -512,13 +512,30 @@ def main() -> None:
 
     mqtt_client.on_message = _on_message_factory(vents)
 
-    # Connect & loop
+    # on_connect callback to re-establish subscriptions after reconnection
+    def _on_connect(client: mqtt.Client, _userdata: Any, _flags: Any, rc: int) -> None:
+        if rc == 0:
+            log.info("Connected to MQTT %s:%d as %s (rc=%d)", MQTT_HOST, MQTT_PORT, CLIENT_ID, rc)
+            client.publish(f"{STATE_BASE}/availability", "online", retain=True)
+            _publish_discovery(client)
+        else:
+            log.error("MQTT connection failed with code %d", rc)
+
+    def _on_disconnect(client: mqtt.Client, _userdata: Any, rc: int) -> None:
+        if rc != 0:
+            log.warning("Unexpected MQTT disconnect (rc=%d), will auto-reconnect", rc)
+        else:
+            log.info("MQTT disconnected gracefully")
+
+    mqtt_client.on_connect = _on_connect
+    mqtt_client.on_disconnect = _on_disconnect
+
+    # Connect & loop (on_connect callback will handle availability & discovery)
     mqtt_client.connect(MQTT_HOST, MQTT_PORT)
     mqtt_client.loop_start()
-    log.info("Connected to MQTT %s:%d as %s", MQTT_HOST, MQTT_PORT, CLIENT_ID)
 
-    mqtt_client.publish(f"{STATE_BASE}/availability", "online", retain=True)
-    _publish_discovery(mqtt_client)
+    # Wait briefly for connection to establish
+    time.sleep(1)
 
     # Order entities: live-ish first
     poll_order = sorted(
