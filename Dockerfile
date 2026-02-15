@@ -1,20 +1,17 @@
-FROM python:3.12-slim AS base
+FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PYTHONUNBUFFERED=1
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      ca-certificates \
-      git \
-      && rm -rf /var/lib/apt/lists/*
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
-COPY pyproject.toml README.md LICENSE /app/
+COPY pyproject.toml uv.lock README.md LICENSE /app/
 COPY src /app/src
 
-RUN pip install --upgrade pip && \
-    pip install "."
+RUN uv sync --frozen --no-dev
+
+ENV PATH="/app/.venv/bin:$PATH"
 
 ENTRYPOINT ["vents-mqtt-ha-bridge"]
